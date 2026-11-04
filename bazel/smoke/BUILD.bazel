@@ -1,0 +1,26 @@
+# Minimal smoke test for the CIRCT Bazel overlay.
+#
+# This binary depends only on the covered subset (HW + Comb + Support), so it
+# is a cheap end-to-end check that the overlay's TableGen wiring, include
+# layout and C++ source lists are consistent.
+#
+# The overlay does not ship @llvm-project; the consumer provides it. See
+# bazel/smoke/README.md and docs/bazel.md.
+
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_binary(
+    name = "smoke",
+    srcs = ["smoke.cpp"],
+    deps = [
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+    ],
+)

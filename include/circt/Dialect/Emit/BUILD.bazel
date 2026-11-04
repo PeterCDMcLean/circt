@@ -1,0 +1,88 @@
+# TableGen and header rules for `include/circt/Dialect/Emit`.
+#
+# CMake reference: `include/circt/Dialect/Emit/CMakeLists.txt` and the
+# `CIRCTEmit` library in `lib/Dialect/Emit/CMakeLists.txt`.
+#
+# The `emit` dialect is not part of the requested scope by itself, but both
+# `hw` and `sv` (and therefore `ExportVerilog`) depend on it.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+]
+
+# `add_circt_dialect(Emit emit)`.
+circt_gentbl(
+    name = "MLIREmitIncGen",
+    tbl_outs = {
+        "Emit.h.inc": ["-gen-op-decls"],
+        "Emit.cpp.inc": ["-gen-op-defs"],
+        "EmitTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=emit",
+        ],
+        "EmitTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=emit",
+        ],
+        "EmitDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=emit",
+        ],
+        "EmitDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=emit",
+        ],
+    },
+    td_file = "Emit.td",
+    deps = TD_DEPS,
+)
+
+# `add_circt_interface(EmitOpInterfaces)`.
+circt_gentbl(
+    name = "CIRCTEmitOpInterfacesIncGen",
+    tbl_outs = {
+        "EmitOpInterfaces.h.inc": ["-gen-op-interface-decls"],
+        "EmitOpInterfaces.cpp.inc": ["-gen-op-interface-defs"],
+    },
+    td_file = "EmitOpInterfaces.td",
+    deps = TD_DEPS,
+)
+
+# Pass declarations (`EmitPasses.td` -> `EmitPasses.h.inc`).
+circt_gentbl(
+    name = "CIRCTEmitTransformsIncGen",
+    tbl_outs = {
+        "EmitPasses.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "EmitPasses.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTEmitOpInterfacesIncGen",
+        ":CIRCTEmitTransformsIncGen",
+        ":MLIREmitIncGen",
+        "//include/circt/Support:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+    ],
+)

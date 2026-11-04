@@ -1,0 +1,32 @@
+# `CIRCTComb` (lib/Dialect/Comb).
+#
+# CMake reference: `lib/Dialect/Comb/CMakeLists.txt`.
+#
+# Not built: `lib/Dialect/Comb/Transforms`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_comb",
+    srcs = [
+        "CombAnalysis.cpp",
+        "CombDialect.cpp",
+        "CombFolds.cpp",
+        "CombOps.cpp",
+        "InferIntRangeInterfaceImpls.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferIntRangeInterface",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:Support",
+    ],
+)

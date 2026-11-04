@@ -1,0 +1,20 @@
+# TableGen-only package for `include/circt/Dialect/Sim`.
+#
+# The `sim` dialect is *not* part of this overlay's C++ coverage. Its `.td`
+# files are needed only because `circt/Dialect/Seq/SeqOps.td` includes
+# `circt/Dialect/Sim/SimTypes.td` textually. They are consumed as TableGen
+# inputs only, so no gentbl or cc_library targets are defined here.
+#
+# Adding the `sim` dialect to the overlay later means: copy the pattern of
+# `include/circt/Dialect/HW/BUILD.bazel` + `lib/Dialect/HW/BUILD.bazel` and
+# follow docs/bazel.md.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)

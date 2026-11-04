@@ -1,0 +1,6 @@
+# Package marker for `bazel/circt.bzl`, which is loaded by every BUILD file in
+# the overlay. Bazel requires every `.bzl` file to live in a package.
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["circt.bzl"])

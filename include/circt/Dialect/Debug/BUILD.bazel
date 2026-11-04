@@ -1,0 +1,67 @@
+# TableGen and header rules for `include/circt/Dialect/Debug`.
+#
+# CMake reference: `include/circt/Dialect/Debug/CMakeLists.txt` plus
+# `add_circt_dialect(Debug dbg)`.
+#
+# The `debug` dialect has no CIRCT dependencies; `ExportVerilog` uses it for
+# source-level debug information.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+]
+
+# `add_circt_dialect(Debug dbg)`.
+circt_gentbl(
+    name = "MLIRDebugIncGen",
+    tbl_outs = {
+        "Debug.h.inc": ["-gen-op-decls"],
+        "Debug.cpp.inc": ["-gen-op-defs"],
+        "DebugTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=dbg",
+        ],
+        "DebugTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=dbg",
+        ],
+        "DebugDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=dbg",
+        ],
+        "DebugDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=dbg",
+        ],
+    },
+    td_file = "Debug.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":MLIRDebugIncGen",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:SideEffectInterfaces",
+        "@llvm-project//mlir:Support",
+    ],
+)

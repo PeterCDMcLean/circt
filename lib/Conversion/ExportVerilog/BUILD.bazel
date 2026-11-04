@@ -1,0 +1,50 @@
+# `CIRCTExportVerilog` (lib/Conversion/ExportVerilog).
+#
+# CMake reference: `lib/Conversion/ExportVerilog/CMakeLists.txt`
+# (`add_circt_translation_library`). Note that upstream keeps this under
+# `lib/Conversion/`, not `lib/Export/`; there is no `lib/Export` directory.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_export_verilog",
+    srcs = [
+        "ApplyLoweringOptions.cpp",
+        "ExportVerilog.cpp",
+        "LegalizeAnonEnums.cpp",
+        "LegalizeNames.cpp",
+        "PrepareForEmission.cpp",
+        "PruneZeroValuedLogic.cpp",
+    ],
+    hdrs = ["ExportVerilogInternals.h"],
+    deps = [
+        "//include/circt/Conversion:headers",
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/Debug:headers",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/LTL:headers",
+        "//include/circt/Dialect/OM:headers",
+        "//include/circt/Dialect/SV:headers",
+        "//include/circt/Dialect/Verif:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/Debug:circt_debug",
+        "//lib/Dialect/Emit:circt_emit",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Dialect/LTL:circt_ltl",
+        "//lib/Dialect/OM:circt_om",
+        "//lib/Dialect/SV:circt_sv",
+        "//lib/Dialect/Verif:circt_verif",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Core",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:SideEffectInterfaces",
+        "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:Transforms",
+    ],
+)

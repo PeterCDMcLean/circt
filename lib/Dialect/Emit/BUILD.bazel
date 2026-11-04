@@ -1,0 +1,30 @@
+# `CIRCTEmit` (lib/Dialect/Emit).
+#
+# CMake reference: `lib/Dialect/Emit/CMakeLists.txt`.
+#
+# Not built: `EmitReductions.cpp` (needs `circt/Reduce`), and everything under
+# `lib/Dialect/Emit/Transforms`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_emit",
+    srcs = [
+        "EmitDialect.cpp",
+        "EmitOpInterfaces.cpp",
+        "EmitOps.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:Transforms",
+    ],
+)

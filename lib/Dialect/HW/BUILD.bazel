@@ -1,0 +1,47 @@
+# `CIRCTHW` (lib/Dialect/HW).
+#
+# CMake reference: `lib/Dialect/HW/CMakeLists.txt`.
+#
+# Not built: `HWReductions.cpp` (`CIRCTHWReductions`, needs `circt/Reduce`) and
+# everything under `lib/Dialect/HW/Transforms`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# `CIRCT_HW_Sources` in CMake.
+cc_library(
+    name = "circt_hw",
+    srcs = [
+        "ConversionPatterns.cpp",
+        "CustomDirectiveImpl.cpp",
+        "HWAttributes.cpp",
+        "HWDialect.cpp",
+        "HWEnums.cpp",
+        "HWInstanceGraph.cpp",
+        "HWInstanceImplementation.cpp",
+        "HWModuleOpInterface.cpp",
+        "HWOpInterfaces.cpp",
+        "HWOps.cpp",
+        "HWTypeInterfaces.cpp",
+        "HWTypes.cpp",
+        "HierPathCache.cpp",
+        "InferIntRangeInterfaceImpls.cpp",
+        "InnerSymbolTable.cpp",
+        "ModuleImplementation.cpp",
+        "PortConverter.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Support:headers",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferIntRangeCommon",
+        "@llvm-project//mlir:InferIntRangeInterface",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:MemorySlotInterfaces",
+        "@llvm-project//mlir:Support",
+    ],
+)

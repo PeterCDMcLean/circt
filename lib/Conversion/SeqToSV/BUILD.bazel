@@ -1,0 +1,48 @@
+# `CIRCTSeqToSV` (lib/Conversion/SeqToSV).
+#
+# CMake reference: `lib/Conversion/SeqToSV/CMakeLists.txt`.
+# This is the `LowerSeqToSV` / `LowerFirMem` conversion. It is covered because
+# it is cheap: it only depends on dialects that are already in this overlay.
+#
+# One caveat: the sources include `circt/Conversion/Passes.h.inc`, which
+# contains the pass declarations of *all* conversions in the tree. That is only
+# a header of `-gen-pass-decls` declarations, so it needs no extra libraries.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_seq_to_sv",
+    srcs = [
+        "FirMemLowering.cpp",
+        "FirRegLowering.cpp",
+        "LowerFirMem.cpp",
+        "SeqToSV.cpp",
+    ],
+    hdrs = [
+        "FirMemLowering.h",
+        "FirRegLowering.h",
+    ],
+    deps = [
+        "//include/circt/Conversion:headers",
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/SV:headers",
+        "//include/circt/Dialect/Seq:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/Emit:circt_emit",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Dialect/SV:circt_sv",
+        "//lib/Dialect/Seq:circt_seq",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Core",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:Transforms",
+    ],
+)

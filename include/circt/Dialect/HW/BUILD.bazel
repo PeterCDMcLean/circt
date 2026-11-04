@@ -1,0 +1,150 @@
+# TableGen and header rules for `include/circt/Dialect/HW`.
+#
+# CMake reference: `include/circt/Dialect/HW/CMakeLists.txt` plus
+# `add_circt_dialect(HW hw)` from `cmake/modules/AddCIRCT.cmake`
+# (`add_mlir_dialect`), which produces the op/type/dialect files below.
+#
+# Generated headers (target name -> CMake target):
+#   :MLIRHWIncGen                    -> MLIRHWIncGen      (from `add_circt_dialect`)
+#   :CIRCTHWAttrIncGen               -> CIRCTHWAttrIncGen
+#   :CIRCTHWEnumsIncGen              -> CIRCTHWEnumsIncGen
+#   :CIRCTHWCanonicalizationIncGen   -> CIRCTHWCanonicalizationIncGen
+#   :CIRCTHWOpInterfacesIncGen       -> CIRCTHWOpInterfacesIncGen
+#   :CIRCTHWTypeInterfacesIncGen     -> CIRCTHWTypeInterfacesIncGen
+#   :CIRCTHWTransformsIncGen         -> CIRCTHWTransformsIncGen (from Passes.td)
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+    "//include/circt/Dialect/Emit:td_files",
+    "//include/circt/Support:td_files",
+]
+
+# `add_circt_dialect(HW hw)` == `add_mlir_dialect(HW hw)`:
+#   HW.h.inc / HW.cpp.inc                     (ops)
+#   HWTypes.h.inc / HWTypes.cpp.inc           (types)
+#   HWDialect.h.inc / HWDialect.cpp.inc       (dialect)
+circt_gentbl(
+    name = "MLIRHWIncGen",
+    tbl_outs = {
+        "HW.h.inc": ["-gen-op-decls"],
+        "HW.cpp.inc": ["-gen-op-defs"],
+        "HWTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=hw",
+        ],
+        "HWTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=hw",
+        ],
+        "HWDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=hw",
+        ],
+        "HWDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=hw",
+        ],
+    },
+    td_file = "HW.td",
+    deps = TD_DEPS,
+)
+
+# Attributes. CMake drives these from `HW.td` (which includes
+# `HWAttributes.td` and `HWAttributesNaming.td`), not from `HWAttributes.td`.
+circt_gentbl(
+    name = "CIRCTHWAttrIncGen",
+    tbl_outs = {
+        "HWAttributes.h.inc": ["-gen-attrdef-decls"],
+        "HWAttributes.cpp.inc": ["-gen-attrdef-defs"],
+    },
+    td_file = "HW.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTHWEnumsIncGen",
+    tbl_outs = {
+        "HWEnums.h.inc": ["-gen-enum-decls"],
+        "HWEnums.cpp.inc": ["-gen-enum-defs"],
+    },
+    td_file = "HWEnums.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTHWCanonicalizationIncGen",
+    tbl_outs = {
+        "HWCanonicalization.cpp.inc": ["-gen-rewriters"],
+    },
+    td_file = "HWCanonicalization.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTHWOpInterfacesIncGen",
+    tbl_outs = {
+        "HWOpInterfaces.h.inc": ["-gen-op-interface-decls"],
+        "HWOpInterfaces.cpp.inc": ["-gen-op-interface-defs"],
+    },
+    td_file = "HWOpInterfaces.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTHWTypeInterfacesIncGen",
+    tbl_outs = {
+        "HWTypeInterfaces.h.inc": ["-gen-type-interface-decls"],
+        "HWTypeInterfaces.cpp.inc": ["-gen-type-interface-defs"],
+    },
+    td_file = "HWTypeInterfaces.td",
+    deps = TD_DEPS,
+)
+
+# Pass declarations for `lib/Dialect/HW/Transforms`.
+circt_gentbl(
+    name = "CIRCTHWTransformsIncGen",
+    tbl_outs = {
+        "Passes.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "Passes.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTHWAttrIncGen",
+        ":CIRCTHWCanonicalizationIncGen",
+        ":CIRCTHWEnumsIncGen",
+        ":CIRCTHWOpInterfacesIncGen",
+        ":CIRCTHWTransformsIncGen",
+        ":CIRCTHWTypeInterfacesIncGen",
+        ":MLIRHWIncGen",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Support:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferIntRangeInterface",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:MemorySlotInterfaces",
+        "@llvm-project//mlir:SideEffectInterfaces",
+        "@llvm-project//mlir:Support",
+    ],
+)

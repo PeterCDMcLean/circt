@@ -1,0 +1,119 @@
+# TableGen and header rules for `include/circt/Dialect/Seq`.
+#
+# CMake reference: `include/circt/Dialect/Seq/CMakeLists.txt` plus
+# `add_circt_dialect(Seq seq)`.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+    "//include/circt/Dialect/Emit:td_files",
+    "//include/circt/Dialect/HW:td_files",
+    "//include/circt/Dialect/Sim:td_files",
+    "//include/circt/Support:td_files",
+]
+
+# `add_circt_dialect(Seq seq)`.
+circt_gentbl(
+    name = "MLIRSeqIncGen",
+    tbl_outs = {
+        "Seq.h.inc": ["-gen-op-decls"],
+        "Seq.cpp.inc": ["-gen-op-defs"],
+        "SeqTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=seq",
+        ],
+        "SeqTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=seq",
+        ],
+        "SeqDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=seq",
+        ],
+        "SeqDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=seq",
+        ],
+    },
+    td_file = "Seq.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "MLIRSeqEnumsIncGen",
+    tbl_outs = {
+        "SeqEnums.h.inc": ["-gen-enum-decls"],
+        "SeqEnums.cpp.inc": ["-gen-enum-defs"],
+    },
+    td_file = "Seq.td",
+    deps = TD_DEPS,
+)
+
+# CMake: `-gen-attrdef-*` with `-attrdefs-dialect=seq`, driven from `Seq.td`.
+circt_gentbl(
+    name = "MLIRSeqAttributesIncGen",
+    tbl_outs = {
+        "SeqAttributes.h.inc": [
+            "-gen-attrdef-decls",
+            "-attrdefs-dialect=seq",
+        ],
+        "SeqAttributes.cpp.inc": [
+            "-gen-attrdef-defs",
+            "-attrdefs-dialect=seq",
+        ],
+    },
+    td_file = "Seq.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTSeqOpInterfacesIncGen",
+    tbl_outs = {
+        "SeqOpInterfaces.h.inc": ["-gen-op-interface-decls"],
+        "SeqOpInterfaces.cpp.inc": ["-gen-op-interface-defs"],
+    },
+    td_file = "SeqOpInterfaces.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTSeqTransformsIncGen",
+    tbl_outs = {
+        "SeqPasses.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "SeqPasses.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTSeqOpInterfacesIncGen",
+        ":CIRCTSeqTransformsIncGen",
+        ":MLIRSeqAttributesIncGen",
+        ":MLIRSeqEnumsIncGen",
+        ":MLIRSeqIncGen",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Support:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+    ],
+)

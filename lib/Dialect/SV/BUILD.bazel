@@ -1,0 +1,37 @@
+# `CIRCTSV` (lib/Dialect/SV).
+#
+# CMake reference: `lib/Dialect/SV/CMakeLists.txt`.
+#
+# Not built: `lib/Dialect/SV/Transforms`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_sv",
+    srcs = [
+        "SVAttributes.cpp",
+        "SVDialect.cpp",
+        "SVOps.cpp",
+        "SVTypes.cpp",
+    ],
+    hdrs = ["ReservedWords.def"],
+    deps = [
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/LTL:headers",
+        "//include/circt/Dialect/SV:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/Emit:circt_emit",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Dialect/LTL:circt_ltl",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:CallInterfaces",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
+    ],
+)

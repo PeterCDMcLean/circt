@@ -1,0 +1,32 @@
+# `CIRCTOM` (lib/Dialect/OM).
+#
+# CMake reference: `lib/Dialect/OM/CMakeLists.txt`.
+#
+# Not built: `OMReductions.cpp` (needs `circt/Reduce`), `lib/Dialect/OM/Evaluator`
+# (needs a full FIRRTL/OM evaluator and is out of scope) and
+# `lib/Dialect/OM/Transforms`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_om",
+    srcs = [
+        "OMAttributes.cpp",
+        "OMDialect.cpp",
+        "OMOpInterfaces.cpp",
+        "OMOps.cpp",
+        "OMTypes.cpp",
+        "OMUtils.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/OM:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/HW:circt_hw",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
+    ],
+)

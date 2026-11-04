@@ -1,0 +1,34 @@
+# `CIRCTSeq` (lib/Dialect/Seq).
+#
+# CMake reference: `lib/Dialect/Seq/CMakeLists.txt`.
+#
+# Not built: `lib/Dialect/Seq/Transforms`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_seq",
+    srcs = [
+        "SeqAttributes.cpp",
+        "SeqDialect.cpp",
+        "SeqOpInterfaces.cpp",
+        "SeqOps.cpp",
+        "SeqTypes.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/Seq:headers",
+        "//include/circt/Support:headers",
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:ArithDialect",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:Transforms",
+    ],
+)

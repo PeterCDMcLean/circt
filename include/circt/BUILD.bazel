@@ -1,0 +1,15 @@
+# Package for TableGen files that live directly in `include/circt`.
+#
+# `Types.td` holds shared type constraints that several dialects include
+# textually (e.g. the `sv` dialect). It is TableGen-only: nothing here is
+# compiled.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)

@@ -1,0 +1,89 @@
+# TableGen and header rules for `include/circt/Dialect/Comb`.
+#
+# CMake reference: `include/circt/Dialect/Comb/CMakeLists.txt` plus
+# `add_circt_dialect(Comb comb)`.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+    "//include/circt/Dialect/HW:td_files",
+]
+
+# `add_circt_dialect(Comb comb)`.
+circt_gentbl(
+    name = "MLIRCombIncGen",
+    tbl_outs = {
+        "Comb.h.inc": ["-gen-op-decls"],
+        "Comb.cpp.inc": ["-gen-op-defs"],
+        "CombTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=comb",
+        ],
+        "CombTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=comb",
+        ],
+        "CombDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=comb",
+        ],
+        "CombDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=comb",
+        ],
+    },
+    td_file = "Comb.td",
+    deps = TD_DEPS,
+)
+
+# CMake: `LLVM_TARGET_DEFINITIONS Comb.td` + `-gen-enum-*`.
+circt_gentbl(
+    name = "MLIRCombEnumsIncGen",
+    tbl_outs = {
+        "CombEnums.h.inc": ["-gen-enum-decls"],
+        "CombEnums.cpp.inc": ["-gen-enum-defs"],
+    },
+    td_file = "Comb.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTCombTransformsIncGen",
+    tbl_outs = {
+        "Passes.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "Passes.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTCombTransformsIncGen",
+        ":MLIRCombEnumsIncGen",
+        ":MLIRCombIncGen",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Support:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferIntRangeInterface",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:Support",
+    ],
+)

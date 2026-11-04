@@ -1,0 +1,27 @@
+# `CIRCTLTL` (lib/Dialect/LTL).
+#
+# CMake reference: `lib/Dialect/LTL/CMakeLists.txt`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_ltl",
+    srcs = [
+        "LTLDialect.cpp",
+        "LTLFolds.cpp",
+        "LTLOps.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/LTL:headers",
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/HW:circt_hw",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:Support",
+    ],
+)

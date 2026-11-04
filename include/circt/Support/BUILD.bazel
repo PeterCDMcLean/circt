@@ -1,0 +1,47 @@
+# TableGen and header rules for `include/circt/Support`.
+#
+# CMake reference: `include/circt/Support/CMakeLists.txt` and the
+# `CIRCTSupport` library in `lib/Support/CMakeLists.txt`.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+]
+
+# `InstanceGraphInterface.td` is pulled in by `HW.td`, but CMake generates it
+# from the `circt/Support/InstanceGraphInterface.td` target itself.
+circt_gentbl(
+    name = "InstanceGraphInterfaceIncGen",
+    tbl_outs = {
+        "InstanceGraphInterface.h.inc": ["-gen-op-interface-decls"],
+        "InstanceGraphInterface.cpp.inc": ["-gen-op-interface-defs"],
+    },
+    td_file = "InstanceGraphInterface.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":InstanceGraphInterfaceIncGen",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
+    ],
+)

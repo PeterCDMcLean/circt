@@ -88,6 +88,13 @@ class SmallSetVector;
 
 // Import things we want into our namespace.
 namespace circt {
+// Note: `mlir::MapVector` is preferred over `llvm::MapVector` because MLIR
+// added a `mlir::MapVector` alias in https://github.com/llvm/llvm-project
+// commit 145af0deae5. Importing the `llvm::` spelling here makes unqualified
+// `MapVector` ambiguous in translation units that also do
+// `using namespace mlir;` (e.g. FIRRTLReductions.cpp, EmitHGLDD.cpp).
+// This requires LLVM >= 145af0deae5, which is the case for any LLVM revision
+// CIRCT currently tracks.
 using mlir::MapVector;      // NOLINT(misc-unused-using-decls)
 using llvm::SmallDenseMap;  // NOLINT(misc-unused-using-decls)
 using llvm::SmallMapVector; // NOLINT(misc-unused-using-decls)

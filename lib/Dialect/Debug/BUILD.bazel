@@ -1,0 +1,24 @@
+# `CIRCTDebug` (lib/Dialect/Debug).
+#
+# CMake reference: `lib/Dialect/Debug/CMakeLists.txt`.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_debug",
+    srcs = [
+        "DebugDialect.cpp",
+        "DebugOps.cpp",
+        "DebugTypes.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/Debug:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:SideEffectInterfaces",
+        "@llvm-project//mlir:Support",
+    ],
+)

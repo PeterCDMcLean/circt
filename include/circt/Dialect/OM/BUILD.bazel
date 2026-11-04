@@ -1,0 +1,113 @@
+# TableGen and header rules for `include/circt/Dialect/OM`.
+#
+# CMake reference: `include/circt/Dialect/OM/CMakeLists.txt` plus
+# `add_circt_dialect(OM om)`.
+#
+# Only the `om` dialect core is covered here. `lib/Dialect/OM/{Evaluator,
+# Transforms}` and `OMReductions.cpp` are out of scope.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+]
+
+# `add_circt_dialect(OM om)`.
+circt_gentbl(
+    name = "MLIROMIncGen",
+    tbl_outs = {
+        "OM.h.inc": ["-gen-op-decls"],
+        "OM.cpp.inc": ["-gen-op-defs"],
+        "OMTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=om",
+        ],
+        "OMTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=om",
+        ],
+        "OMDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=om",
+        ],
+        "OMDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=om",
+        ],
+    },
+    td_file = "OM.td",
+    deps = TD_DEPS,
+)
+
+# CMake drives the enum/attr generation from `OMEnums.td` and `OM.td`
+# respectively.
+circt_gentbl(
+    name = "MLIROMEnumsIncGen",
+    tbl_outs = {
+        "OMEnums.h.inc": ["-gen-enum-decls"],
+        "OMEnums.cpp.inc": ["-gen-enum-defs"],
+    },
+    td_file = "OMEnums.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "MLIROMAttrIncGen",
+    tbl_outs = {
+        "OMAttributes.h.inc": ["-gen-attrdef-decls"],
+        "OMAttributes.cpp.inc": ["-gen-attrdef-defs"],
+    },
+    td_file = "OM.td",
+    deps = TD_DEPS,
+)
+
+# `add_circt_interface(OMOpInterfaces)`.
+circt_gentbl(
+    name = "MLIROMOpInterfacesIncGen",
+    tbl_outs = {
+        "OMOpInterfaces.h.inc": ["-gen-op-interface-decls"],
+        "OMOpInterfaces.cpp.inc": ["-gen-op-interface-defs"],
+    },
+    td_file = "OMOpInterfaces.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTOMTransformsIncGen",
+    tbl_outs = {
+        "OMPasses.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "OMPasses.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTOMTransformsIncGen",
+        ":MLIROMAttrIncGen",
+        ":MLIROMEnumsIncGen",
+        ":MLIROMIncGen",
+        ":MLIROMOpInterfacesIncGen",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Support:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
+    ],
+)

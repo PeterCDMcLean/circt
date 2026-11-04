@@ -1,0 +1,87 @@
+# TableGen and header rules for `include/circt/Dialect/LTL`.
+#
+# CMake reference: `include/circt/Dialect/LTL/CMakeLists.txt` plus
+# `add_circt_dialect(LTL ltl)`.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+    "//include/circt/Dialect/HW:td_files",
+]
+
+# `add_circt_dialect(LTL ltl)`.
+circt_gentbl(
+    name = "MLIRLTLIncGen",
+    tbl_outs = {
+        "LTL.h.inc": ["-gen-op-decls"],
+        "LTL.cpp.inc": ["-gen-op-defs"],
+        "LTLTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=ltl",
+        ],
+        "LTLTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=ltl",
+        ],
+        "LTLDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=ltl",
+        ],
+        "LTLDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=ltl",
+        ],
+    },
+    td_file = "LTL.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTLTLEnumsIncGen",
+    tbl_outs = {
+        "LTLEnums.h.inc": ["-gen-enum-decls"],
+        "LTLEnums.cpp.inc": ["-gen-enum-defs"],
+    },
+    td_file = "LTL.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTLTLFoldsIncGen",
+    tbl_outs = {
+        "LTLFolds.cpp.inc": ["-gen-rewriters"],
+    },
+    td_file = "LTL.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTLTLEnumsIncGen",
+        ":CIRCTLTLFoldsIncGen",
+        ":MLIRLTLIncGen",
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/HW:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:Support",
+    ],
+)

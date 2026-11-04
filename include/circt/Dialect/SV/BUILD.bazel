@@ -1,0 +1,112 @@
+# TableGen and header rules for `include/circt/Dialect/SV`.
+#
+# CMake reference: `include/circt/Dialect/SV/CMakeLists.txt` plus
+# `add_circt_dialect(SV sv)`.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+    "//include/circt/Dialect/Emit:td_files",
+    "//include/circt/Dialect/HW:td_files",
+    "//include/circt/Dialect/LTL:td_files",
+    "//include/circt/Support:td_files",
+    "//include/circt:td_files",
+]
+
+# `add_circt_dialect(SV sv)`.
+circt_gentbl(
+    name = "MLIRSVIncGen",
+    tbl_outs = {
+        "SV.h.inc": ["-gen-op-decls"],
+        "SV.cpp.inc": ["-gen-op-defs"],
+        "SVTypes.h.inc": [
+            "-gen-typedef-decls",
+            "-typedefs-dialect=sv",
+        ],
+        "SVTypes.cpp.inc": [
+            "-gen-typedef-defs",
+            "-typedefs-dialect=sv",
+        ],
+        "SVDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=sv",
+        ],
+        "SVDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=sv",
+        ],
+    },
+    td_file = "SV.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "MLIRSVEnumsIncGen",
+    tbl_outs = {
+        "SVEnums.h.inc": ["-gen-enum-decls"],
+        "SVEnums.cpp.inc": ["-gen-enum-defs"],
+    },
+    td_file = "SV.td",
+    deps = TD_DEPS,
+)
+
+# CMake: `-gen-attrdef-*` with `--attrdefs-dialect=sv`, driven from `SV.td`.
+circt_gentbl(
+    name = "MLIRSVAttributesIncGen",
+    tbl_outs = {
+        "SVAttributes.h.inc": [
+            "-gen-attrdef-decls",
+            "-attrdefs-dialect=sv",
+        ],
+        "SVAttributes.cpp.inc": [
+            "-gen-attrdef-defs",
+            "-attrdefs-dialect=sv",
+        ],
+    },
+    td_file = "SV.td",
+    deps = TD_DEPS,
+)
+
+circt_gentbl(
+    name = "CIRCTSVTransformsIncGen",
+    tbl_outs = {
+        "SVPasses.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "SVPasses.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTSVTransformsIncGen",
+        ":MLIRSVAttributesIncGen",
+        ":MLIRSVEnumsIncGen",
+        ":MLIRSVIncGen",
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/LTL:headers",
+        "//include/circt/Support:headers",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+    ],
+)

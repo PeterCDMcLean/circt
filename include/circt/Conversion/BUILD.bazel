@@ -1,0 +1,61 @@
+# TableGen and header rules for `include/circt/Conversion`.
+#
+# CMake reference: `include/circt/Conversion/CMakeLists.txt`, which generates
+# `Passes.h.inc` from `Passes.td` (`CIRCTConversionPassIncGen`).
+#
+# NOTE: this package only provides the *pass declarations*. The umbrella
+# header `circt/Conversion/Passes.h` includes the public headers of every
+# conversion in the tree, including ones this overlay does not build (FIRRTL,
+# ESI, SMT, Calyx, ...). Do not include `circt/Conversion/Passes.h` from Bazel
+# consumers; include the per-conversion header (e.g.
+# `circt/Conversion/SeqToSV.h`) instead. See docs/bazel.md.
+
+load("@llvm-project//mlir:tblgen.bzl", "td_library")
+load("//bazel:circt.bzl", "circt_gentbl", "circt_headers")
+
+package(default_visibility = ["//visibility:public"])
+
+td_library(
+    name = "td_files",
+    srcs = glob(["*.td"]),
+    includes = ["/include"],
+)
+
+# TableGen inputs needed by the `.td` files in this package: its own files
+# plus the CIRCT packages whose `.td` files they include textually. These
+# deps live here, not on `:td_files`, because some dialects include each
+# other (e.g. `seq` and `sim`) and a cycle in the target graph would be an
+# error even though the textual `.td` includes are legal.
+TD_DEPS = [
+    ":td_files",
+]
+
+circt_gentbl(
+    name = "CIRCTConversionPassIncGen",
+    tbl_outs = {
+        "Passes.h.inc": ["-gen-pass-decls"],
+    },
+    td_file = "Passes.td",
+    deps = TD_DEPS,
+)
+
+circt_headers(
+    name = "headers",
+    srcs = glob(["*.h"]),
+    deps = [
+        ":CIRCTConversionPassIncGen",
+        "//include/circt/Dialect/Comb:headers",
+        "//include/circt/Dialect/Debug:headers",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/HW:headers",
+        "//include/circt/Dialect/LTL:headers",
+        "//include/circt/Dialect/OM:headers",
+        "//include/circt/Dialect/SV:headers",
+        "//include/circt/Dialect/Seq:headers",
+        "//include/circt/Dialect/Verif:headers",
+        "//include/circt/Support:headers",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Support",
+    ],
+)
