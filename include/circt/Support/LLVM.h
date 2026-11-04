@@ -88,7 +88,7 @@ class SmallSetVector;
 
 // Import things we want into our namespace.
 namespace circt {
-using llvm::MapVector;      // NOLINT(misc-unused-using-decls)
+using mlir::MapVector;      // NOLINT(misc-unused-using-decls)
 using llvm::SmallDenseMap;  // NOLINT(misc-unused-using-decls)
 using llvm::SmallMapVector; // NOLINT(misc-unused-using-decls)
 using llvm::SmallSet;       // NOLINT(misc-unused-using-decls)
