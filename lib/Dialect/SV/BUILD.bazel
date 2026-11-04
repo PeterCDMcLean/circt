@@ -30,7 +30,7 @@ cc_library(
         "//lib/Dialect/LTL:circt_ltl",
         "//lib/Support:circt_support",
         "@llvm-project//llvm:Support",
-        "@llvm-project//mlir:CallInterfaces",
+        "@llvm-project//mlir:CallOpInterfaces",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Support",
     ],
