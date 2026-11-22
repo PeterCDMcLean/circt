@@ -1,0 +1,29 @@
+# Minimal Bazel target for CIRCT's Seq transforms used by the HDL prototype.
+# Only the register-array-to-memory inference pass is built.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "circt_seq_transforms",
+    srcs = [
+        "HWMemSimImpl.cpp",
+        "RegOfVecToMem.cpp",
+    ],
+    deps = [
+        "//include/circt/Dialect/Seq:headers",
+        "//include/circt/Dialect/Emit:headers",
+        "//include/circt/Dialect/SV:headers",
+        "//lib/Dialect/Comb:circt_comb",
+        "//lib/Dialect/Emit:circt_emit",
+        "//lib/Dialect/SV:circt_sv",
+        "//lib/Dialect/HW:circt_hw",
+        "//lib/Dialect/Seq:circt_seq",
+        "//lib/Support:circt_support",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:TransformUtils",
+    ],
+)
