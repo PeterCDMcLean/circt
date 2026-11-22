@@ -120,7 +120,7 @@ struct LoweringOptions {
   /// If true, every port is declared separately
   /// (each includes direction and type (e.g., `input [3:0]`)).
   /// When false (default), ports share declarations when possible.
-  bool disallowPortDeclSharing = false;
+  bool disallowPortDeclSharing = true;
 
   /// Print debug info.
   bool printDebugInfo = false;
@@ -174,7 +174,7 @@ struct LoweringOptions {
     emitVarLogic,
     emitWire,
     emitNone,
-  } emitPortType = EmitPortType::emitNone;
+  } emitPortType = EmitPortType::emitWire;
 
   /// If true, emit a comment wherever an instance wasn't printed, because
   /// it's emitted elsewhere as a bind.
@@ -207,7 +207,7 @@ struct LoweringOptions {
 
   /// If true, always emit begin/end blocks around if/else/always bodies, even
   /// when there is only a single statement.
-  bool alwaysEmitBeginEnd = false;
+  bool alwaysEmitBeginEnd = true;
 
   /// Controls the declaration syntax emitted for `sv.var`.
   ///
