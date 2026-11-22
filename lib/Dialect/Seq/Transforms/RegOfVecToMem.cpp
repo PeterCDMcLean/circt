@@ -89,6 +89,12 @@ bool RegOfVecToMemPass::analyzeMemoryPattern(FirRegOp reg,
   if (!isArrayType(reg.getType()))
     return false;
 
+  // A register with reset or preset state cannot be represented by the
+  // memory created below, which starts undefined. Leave it for the local
+  // array-register lowering so its initialization is preserved.
+  if (reg.getReset() || reg.getPresetAttr())
+    return false;
+
   ArrayGetOp readAccess;
   ArrayInjectOp writeAccess;
   comb::MuxOp writeMux;
