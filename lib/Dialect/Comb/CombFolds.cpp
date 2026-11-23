@@ -931,6 +931,10 @@ OpFoldResult AndOp::fold(FoldAdaptor adaptor) {
   if (isOpTriviallyRecursive(*this))
     return {};
 
+  // Parameterized integer types have no static width to fold against.
+  if (!getType().isIntOrIndex())
+    return {};
+
   APInt value = APInt::getAllOnes(cast<IntegerType>(getType()).getWidth());
 
   auto inputs = adaptor.getInputs();
@@ -1242,6 +1246,10 @@ OpFoldResult OrOp::fold(FoldAdaptor adaptor) {
   if (isOpTriviallyRecursive(*this))
     return {};
 
+  // Parameterized integer types have no static width to fold against.
+  if (!getType().isIntOrIndex())
+    return {};
+
   auto value = APInt::getZero(cast<IntegerType>(getType()).getWidth());
   auto inputs = adaptor.getInputs();
   // or(x, 10, 01) -> 11
@@ -1385,6 +1393,10 @@ LogicalResult OrOp::canonicalize(OrOp op, PatternRewriter &rewriter) {
 
 OpFoldResult XorOp::fold(FoldAdaptor adaptor) {
   if (isOpTriviallyRecursive(*this))
+    return {};
+
+  // Parameterized integer types have no static width to fold against.
+  if (!getType().isIntOrIndex())
     return {};
 
   auto size = getInputs().size();
