@@ -1724,7 +1724,10 @@ LogicalResult AddOp::canonicalize(AddOp op, PatternRewriter &rewriter) {
 
   // extracts only of add(...) -> add(extract()...)
   // Unused low bits are dropped too when they can never carry into the bits
-  // that are used.
+  // that are used.  Parameterized integer types have no static width, so the
+  // narrowing rewrites below do not apply.
+  if (!op.getType().isIntOrIndex())
+    return failure();
   unsigned width = op.getType().getIntOrFloatBitWidth();
   auto [lowestBit, highestBit] =
       getLowestBitAndHighestBitRequired(op, /*narrowTrailingBits=*/true, width);
